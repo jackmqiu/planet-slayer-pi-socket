@@ -1,0 +1,22 @@
+{
+  "name": "planetslayer",
+  "version": "1.0.0",
+  "description": "pi handling hits and shooting communication over sockets",
+  "main": "webserver.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jackmqiu/planet-slayer-pi-socket.git"
+  },
+  "author": "Jack Qiu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jackmqiu/planet-slayer-pi-socket/issues"
+  },
+  "homepage": "https://github.com/jackmqiu/planet-slayer-pi-socket#readme",
+  "dependencies": {
+    "socket.io": "^3.0.5"
+  }
+}
