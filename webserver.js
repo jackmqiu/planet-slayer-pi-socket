@@ -1,66 +1,60 @@
-// var http = require('http').createServer(handler); //require http 
-// server, and create server with function handler() var fs = 
-// require('fs'); //require filesystem module
+const dotenv = require('dotenv').config();
+
+
 const io = require('socket.io-client');
-const socket = io.connect("http://192.168.43.231:3000", {
+const socket = io.connect(`${process.env.SERVER}3000`, {
     reconnection: true
 })
 
-const Gpio = require('onoff').Gpio;
-let LED = new Gpio(4, 'out');
-let inputDevice = new Gpio(17, 'in', 'rising',{debounceTimeout: 250});
-// const redis = require('socket.io-redis');
-// io.adapter(redis({ host: 'localhost', port: 3000 }));
-
-// http.listen(8000, () => {
-//   console.log('listening on *:8000');
-// });
-
-// function handler (req, res) { //create server
-//   fs.readFile(__dirname + '/public/index.html', function(err, data) { //read file index.html in public folder
-//     if (err) {
-//       res.writeHead(404, {'Content-Type': 'text/html'}); //display 404 on error
-//       return res.end("404 Not Found");
-//     }
-//     res.writeHead(200, {'Content-Type': 'text/html'}); //write HTML
-//     res.write(data); //write data from index.html
-//     return res.end();
-//   });
-// }
+if (process.env.NODE_ENV === 'pi') { //GPIO
+  const Gpio = require('onoff').Gpio;
+  let LED = new Gpio(4, 'out');
+  let inputDevice = new Gpio(17, 'in', 'rising',{debounceTimeout: 250});
 
 
-const blinkLED = () => {
-	if (LED.readSync() === 0) {
-		LED.writeSync(1);
-	} else {
-		LED.writeSync(0);
-	}
+  const blinkLED = () => {
+  	if (LED.readSync() === 0) {
+  		LED.writeSync(1);
+  	} else {
+  		LED.writeSync(0);
+  	}
+  }
 }
+
 
 
 socket.on('connect', function () {
     console.log('connected to localhost:3000');
-	console.log('id', socket.id);
+	  console.log('id', socket.id);
+    socket.emit('initializePlayer', process.env.PI_DEVICE_NUMBER);
     let lightVal = 0;
-    inputDevice.watch(function (err, val) {
-	console.log('trip');
-	if (err) {
-	   console.error('There was an error', err);
-	   return;
-	}
-	socket.emit('shoot', val);
-    });
+    if (process.env.NODE_ENV === 'pi') { // Shot registering
+      inputDevice.watch(function (err, val) {
+      	console.log('trip');
+      	if (err) {
+      	   console.error('There was an error', err);
+      	   return;
+      	}
+      	socket.emit('shoot', val);
+      });
+    } else if (process.env.NODE_ENV === 'local') { //local test
+      setTimeout((testCode)=> socket.emit('shoot', testCode), 1500, 2);
+    }
     socket.on('shot', (data) => {
         console.log('message from the server:', data);
         socket.emit('serverEvent', "thanks server! for sending '" + data + "'");
-	blinkLED();
+	      if (process.env.NODE_ENV === 'pi') {
+          blinkLED();
+        };
     });
-	
+
 });
 
-process.on('SIGINT', () => {
-  LED.writeSync(0);
-  LED.unexport();
-  inputDevice.unexport();
-  process.exit();
-});
+if (process.env.NODE_ENV === 'pi') {
+  process.on('SIGINT', () => {
+    LED.writeSync(0);
+    LED.unexport();
+    inputDevice.unexport();
+    process.exit();
+  });
+};
