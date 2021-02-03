@@ -11,7 +11,7 @@ const socket = io.connect(`${process.env.SERVER}3000`, {
 })
 
 function handler (req, res) { //create server
-  socket.emit('shoot', 1);
+  socket.emit('shooting', process.env.PI_DEVICE_NUMBER);
   fs.readFile(__dirname + '/public/index.html', function(err, data) { //read file index.html in public folder
     if (err) {
       res.writeHead(404, {'Content-Type': 'text/html'}); //display 404 on error
@@ -43,7 +43,7 @@ if (process.env.NODE_ENV === 'pi') { //GPIO
 socket.on('connect', function () {
     console.log('connected to localhost:3000');
 	  console.log('id', socket.id);
-    socket.emit('initializePlayer', process.env.PI_DEVICE_NUMBER);
+    socket.emit('initializeDevice', process.env.PI_DEVICE_NUMBER, process.env.DEVICE_TYPE);
     let lightVal = 0;
     if (process.env.NODE_ENV === 'pi') { // Shot registering
       inputDevice.watch(function (err, val) {
@@ -52,10 +52,14 @@ socket.on('connect', function () {
       	   console.error('There was an error', err);
       	   return;
       	}
-      	socket.emit('shoot', val);
+        if (process.env.DEVICE_TYPE === 'gun') {
+          socket.emit('shooting', process.env.PI_DEVICE_NUMBER);
+        } else {
+          socket.emit('hit', process.env.PI_DEVICE_NUMBER);
+        }
       });
     } else if (process.env.NODE_ENV === 'local') { //local test
-      setTimeout((testCode)=> socket.emit('shoot', testCode), 1500, 2);
+      setTimeout(()=> socket.emit('shooting', process.env.PI_DEVICE_NUMBER), 1500);
     }
     socket.on('shot', (data) => {
         console.log('message from the server:', data);
