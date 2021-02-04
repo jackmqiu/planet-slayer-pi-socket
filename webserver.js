@@ -11,7 +11,11 @@ const socket = io.connect(`${process.env.SERVER}3000`, {
 })
 
 function handler (req, res) { //create server
-  socket.emit('shooting', process.env.PI_DEVICE_NUMBER);
+  if (process.env.DEVICE_TYPE === 'gun') {
+    socket.emit('shooting', process.env.PI_DEVICE_NUMBER);
+  } else {
+    socket.emit('hit', process.env.PI_DEVICE_NUMBER);
+  }
   fs.readFile(__dirname + '/public/index.html', function(err, data) { //read file index.html in public folder
     if (err) {
       res.writeHead(404, {'Content-Type': 'text/html'}); //display 404 on error
@@ -61,7 +65,7 @@ socket.on('connect', function () {
     } else if (process.env.NODE_ENV === 'local') { //local test
       setTimeout(()=> socket.emit('shooting', process.env.PI_DEVICE_NUMBER), 1500);
     }
-    socket.on('shot', (data) => {
+    socket.on('hit', (data) => {
         console.log('message from the server:', data);
         socket.emit('serverEvent', "thanks server! for sending '" + data + "'");
 	      if (process.env.NODE_ENV === 'pi') {
