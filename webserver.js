@@ -27,7 +27,8 @@ function handler (req, res) { //create server
   });
 }
 
-if (process.env.NODE_ENV === 'pi') { //GPIO
+ //GPIO
+	console.log('pi env');
   const Gpio = require('onoff').Gpio;
   let LED = new Gpio(4, 'out');
   let maskDevice = new Gpio(17, 'in', 'rising',{debounceTimeout: 250});
@@ -38,13 +39,13 @@ if (process.env.NODE_ENV === 'pi') { //GPIO
 
   const blinkLED = () => {
 
-  		LED.writeSync(1);
+	LED.writeSync(1);
       setTimeout(() => {
         LED.writeSync(0);
       }, 1000);
 
   }
-}
+
 
 
 
