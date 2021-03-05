@@ -30,15 +30,19 @@ function handler (req, res) { //create server
 if (process.env.NODE_ENV === 'pi') { //GPIO
   const Gpio = require('onoff').Gpio;
   let LED = new Gpio(4, 'out');
-  let inputDevice = new Gpio(17, 'in', 'rising',{debounceTimeout: 250});
+  let maskDevice = new Gpio(17, 'in', 'rising',{debounceTimeout: 250});
+  let chestPlateDevice = new Gpio(26, 'in', 'rising',{debounceTimeout: 250});
+  let backPlateDevice = new Gpio(16, 'in', 'rising',{debounceTimeout: 250});
+  let gunDevice = new Gpio(14, 'in', 'rising',{debounceTimeout: 250});
 
 
   const blinkLED = () => {
-  	if (LED.readSync() === 0) {
+
   		LED.writeSync(1);
-  	} else {
-  		LED.writeSync(0);
-  	}
+      setTimeout(() => {
+        LED.writeSync(0);
+      }, 1000);
+
   }
 }
 
@@ -50,18 +54,34 @@ socket.on('connect', function () {
     socket.emit('initializeDevice', process.env.PI_DEVICE_NUMBER, process.env.DEVICE_TYPE);
     let lightVal = 0;
     if (process.env.NODE_ENV === 'pi') { // Shot registering
-      inputDevice.watch(function (err, val) {
+      maskDevice.watch(function (err, val) {
       	console.log('trip');
       	if (err) {
       	   console.error('There was an error', err);
       	   return;
       	}
-        if (process.env.DEVICE_TYPE === 'gun') {
-          socket.emit('shooting', process.env.PI_DEVICE_NUMBER);
-        } else {
-          socket.emit('hit', process.env.PI_DEVICE_NUMBER);
-        }
+        // if (process.env.DEVICE_TYPE === 'gun') {
+        //   socket.emit('shooting', process.env.PI_DEVICE_NUMBER);
+        // } else {
+          socket.emit('mask_hit', process.env.PI_DEVICE_NUMBER);
+          blinkLED();
+        // }
       });
+      chestPlateDevice.watch((err, val) => {
+        console.log('chest hit');
+        socket.emit('chest_hit', process.env.PI_DEVICE_NUMBER);
+        blinkLED();
+      });
+      backPlateDevice.watch((err, val) => {
+        console.log('back hit');
+        socket.emit('back_hit', process.env.PI_DEVICE_NUMBER);
+        blinkLED();
+      });
+      gunDevice.watch((err, val) => {
+        console.log('shooting');
+        socket.emit('shooting', process.env.PI_DEVICE_NUMBER);
+        blinkLED();
+      })
     } else if (process.env.NODE_ENV === 'local') { //local test
       setTimeout(()=> socket.emit('shooting', process.env.PI_DEVICE_NUMBER), 1500);
     }
@@ -79,7 +99,10 @@ if (process.env.NODE_ENV === 'pi') {
   process.on('SIGINT', () => {
     LED.writeSync(0);
     LED.unexport();
-    inputDevice.unexport();
+    maskDevice.unexport();
+    chestPlateDevice.unexport();
+    backPlateDevice.unexport();
+    gunDevice.unexport();
     process.exit();
   });
 };
