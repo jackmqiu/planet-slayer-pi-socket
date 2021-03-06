@@ -56,7 +56,7 @@ socket.on('connect', function () {
     let lightVal = 0;
     // Shot registering
       maskDevice.watch(function (err, val) {
-      	console.log('trip');
+      	console.log('mask_hit');
       	if (err) {
       	   console.error('There was an error', err);
       	   return;
