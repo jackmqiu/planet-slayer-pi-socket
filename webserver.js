@@ -28,7 +28,7 @@ function handler (req, res) { //create server
 }
 
  //GPIO
-	console.log('pi env');
+
   const Gpio = require('onoff').Gpio;
   let LED = new Gpio(4, 'out');
   let maskDevice = new Gpio(6, 'in', 'rising',{debounceTimeout: 250});
@@ -54,7 +54,7 @@ socket.on('connect', function () {
 	  console.log('id', socket.id);
     socket.emit('initializeDevice', process.env.PI_DEVICE_NUMBER, process.env.DEVICE_TYPE);
     let lightVal = 0;
-    if (process.env.NODE_ENV === 'pi') { // Shot registering
+    // Shot registering
       maskDevice.watch(function (err, val) {
       	console.log('trip');
       	if (err) {
@@ -83,7 +83,7 @@ socket.on('connect', function () {
         socket.emit('shooting', process.env.PI_DEVICE_NUMBER);
         blinkLED();
       })
-    } else if (process.env.NODE_ENV === 'local') { //local test
+    if (process.env.NODE_ENV === 'local') { //local test
       setTimeout(()=> socket.emit('shooting', process.env.PI_DEVICE_NUMBER), 1500);
     }
     socket.on('hit', (data) => {
