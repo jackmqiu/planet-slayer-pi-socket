@@ -31,9 +31,9 @@ function handler (req, res) { //create server
 	console.log('pi env');
   const Gpio = require('onoff').Gpio;
   let LED = new Gpio(4, 'out');
-  let maskDevice = new Gpio(17, 'in', 'rising',{debounceTimeout: 250});
-  let chestPlateDevice = new Gpio(26, 'in', 'rising',{debounceTimeout: 250});
-  let backPlateDevice = new Gpio(16, 'in', 'rising',{debounceTimeout: 250});
+  let maskDevice = new Gpio(6, 'in', 'rising',{debounceTimeout: 250});
+  let chestPlateDevice = new Gpio(16, 'in', 'rising',{debounceTimeout: 250});
+  let backPlateDevice = new Gpio(23, 'in', 'rising',{debounceTimeout: 250});
   let gunDevice = new Gpio(14, 'in', 'rising',{debounceTimeout: 250});
 
 
